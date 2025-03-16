@@ -2,15 +2,46 @@
 __pycache__/
 *.py[cod]
 *$py.class
-venv/
-*.db
 
-# IDEs
+# Virtual Environments
+venv/
+.venv
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Databases
+*.db
+db.sqlite3
+db.sqlite3-journal
+
+# IDE Specific
 .idea/
 .vscode/
+.spyderproject
+.spyproject
+.ropeproject
 
-# Environment
+# Project Specific
 .env
+*.log
+
+# Build and Distribution
+build/
+dist/
+*.egg-info/
+.eggs/
 
 # Frontend
-node_modules/
+frontend/node_modules/
+frontend/build/
+
+# Testing and Coverage
+.coverage
+.pytest_cache/
+htmlcov/
+
+# Miscellaneous
+.DS_Store
+*.so
