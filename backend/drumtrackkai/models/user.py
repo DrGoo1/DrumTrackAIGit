@@ -1,28 +1,24 @@
+from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime
 from .. import db
-from sqlalchemy.sql import func
-from enum import Enum as PyEnum
-
-
-class SubscriptionTier(PyEnum):
-    FREE = 'free'
-    INDIVIDUAL = 'individual'
-    PROFESSIONAL = 'professional'
 
 
 class User(db.Model):
-    __tablename__ = 'users'
-
     id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    last_login = db.Column(db.DateTime)
 
-    subscription_tier = db.Column(
-        db.Enum(SubscriptionTier),
-        default=SubscriptionTier.FREE
-    )
+    # For future use
+    analyses = db.relationship('Analysis', backref='user', lazy=True)
 
-    credits_remaining = db.Column(db.Integer, default=3)
-    total_analyses = db.Column(db.Integer, default=0)
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
 
-    created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
-    last_login = db.Column(db.DateTime(timezone=True), nullable=True)
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+    def __repr__(self):
+        return f'<User {self.username}>'

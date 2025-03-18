@@ -1,12 +1,12 @@
-from . import create_app, db
+import sys
+import os
 
-# Create application instance
+# Add the current directory to the path so Python can find the drumtrackkai package
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
+
+from drumtrackkit import create_app
+
 app = create_app()
 
-# Create database tables
-with app.app_context():
-    db.create_all()
-
-# Run the application if this script is executed directly
 if __name__ == '__main__':
     app.run(debug=True)

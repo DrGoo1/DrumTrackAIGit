@@ -1,34 +1,25 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from ..models.user import User
-from ..services.analysis_service import AnalysisService
+from ..models.analysis import Analysis
+from .. import db
 
-bp = Blueprint('analysis', __name__)
+analysis_bp = Blueprint('analysis', __name__)
 
 
-@bp.route('/analyze', methods=['POST'])
+@analysis_bp.route('/status', methods=['GET'])
+def status():
+    return jsonify({"status": "Analyzer system operational"}), 200
+
+
+# For now just a placeholder endpoint
+@analysis_bp.route('/sample', methods=['POST'])
 @jwt_required()
-def perform_analysis():
-    """
-    Endpoint for performing drum performance analysis
-    """
-    try:
-        # Get current user
-        current_user_id = get_jwt_identity()
-        user = User.query.get(current_user_id)
+def analyze_sample():
+    current_user_id = get_jwt_identity()
 
-        # Check if file was uploaded
-        if 'audio_file' not in request.files:
-            return jsonify({'error': 'No audio file uploaded'}), 400
-
-        audio_file = request.files['audio_file']
-        analysis_type = request.form.get('analysis_type', 'general')
-
-        # Perform analysis
-        analysis_service = AnalysisService()
-        result = analysis_service.create_analysis(current_user_id, analysis_type)
-
-        return jsonify(result), 200
-
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    # Just a placeholder response for testing
+    return jsonify({
+        "message": "Analysis endpoint ready for implementation",
+        "user_id": current_user_id
+    }), 200
