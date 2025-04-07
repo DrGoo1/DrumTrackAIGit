@@ -24,10 +24,10 @@
     },
     "training_dashboard": {
       "version": "3.5.0",
-      "path": "training_dashboard.py",
-      "launch_script": "python training_dashboard.py --host 0.0.0.0 --port 5000",
-      "port": 5000,
-      "health_endpoint": "/",
+      "path": "dashboard/main.py",
+      "launch_script": "run_fastapi_dashboard.bat",
+      "port": 5050,
+      "health_endpoint": "/health",
       "dependencies": ["fastapi_backend"]
     },
     "tensorboard": {

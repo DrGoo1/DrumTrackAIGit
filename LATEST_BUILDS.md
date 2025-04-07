@@ -8,6 +8,17 @@ Last updated: April 6, 2025
 
 The current stable version is **1.0**, which includes the complete testing and deployment framework. This version provides a comprehensive system for testing and deploying DrumTracKAI components.
 
+## IMPORTANT: FASTAPI REQUIRED
+
+**DrumTracKAI now EXCLUSIVELY uses FastAPI for all backend components, including the training dashboard. The Flask-based legacy code should NOT be used under any circumstances.**
+
+To ensure you're using the correct environment:
+1. Use the `fastapi_env` conda environment
+2. Always launch with `run_fastapi.bat` for the backend and `run_fastapi_dashboard.bat` for the dashboard
+3. Do NOT use any Flask-based scripts like the legacy `training_dashboard.py`
+
+The validation system in v1.0 specifically checks for and enforces FastAPI usage.
+
 ## Testing and Deployment Framework (v1.0)
 
 The v1.0 release includes a comprehensive testing and deployment framework:

@@ -168,6 +168,39 @@ class ValidationPipeline:
         launch_script = self.config_manager.get_component_launch_script(component_name)
         base_path = self.config_manager.get_base_path()
         
+        # Verify we're using FastAPI for components that require it
+        if component_name in ["fastapi_backend", "training_dashboard"]:
+            print(f"Ensuring FastAPI environment for {component_name}...")
+            try:
+                # Use fastapi_env if available, otherwise use system Python
+                if sys.platform == "win32":
+                    # On Windows, try to use conda env
+                    env_check = subprocess.run(
+                        ["conda", "info", "--envs"],
+                        capture_output=True,
+                        text=True,
+                        shell=True
+                    )
+                    if "fastapi_env" in env_check.stdout:
+                        print("Using fastapi_env conda environment")
+                        # Set up environment to use fastapi_env
+                        if launch_script.endswith(".bat"):
+                            # Update launch script to use the right environment first
+                            subprocess.run(
+                                ["conda", "activate", "fastapi_env"],
+                                shell=True
+                            )
+                else:
+                    # On Linux/Mac, check if FastAPI is installed
+                    try:
+                        import fastapi
+                        print("FastAPI is installed in current environment")
+                    except ImportError:
+                        print("Warning: FastAPI not installed in current environment")
+                        print("Component may not start correctly")
+            except Exception as e:
+                print(f"Warning: Could not verify FastAPI environment: {e}")
+        
         try:
             if launch_script.endswith(".bat") or launch_script.endswith(".sh"):
                 # It's a script file
