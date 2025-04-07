@@ -1,0 +1,64 @@
+{
+  "project": {
+    "name": "DrumTracKAI",
+    "base_path": "/mnt/c/Users/goldw/DrumTracKAI",
+    "version": "2.0.0",
+    "environment": "development"
+  },
+  "components": {
+    "fastapi_backend": {
+      "version": "1.0.0",
+      "path": "backend/app/main.py",
+      "launch_script": "run_fastapi.bat",
+      "port": 8008,
+      "health_endpoint": "/health",
+      "dependencies": []
+    },
+    "modern_ui": {
+      "version": "2.0.0",
+      "path": "frontend/modern-ui",
+      "launch_script": "run_modern_ui.bat",
+      "port": 3000,
+      "health_endpoint": "/",
+      "dependencies": ["fastapi_backend"]
+    },
+    "training_dashboard": {
+      "version": "3.5.0",
+      "path": "training_dashboard.py",
+      "launch_script": "python training_dashboard.py --host 0.0.0.0 --port 5000",
+      "port": 5000,
+      "health_endpoint": "/",
+      "dependencies": ["fastapi_backend"]
+    },
+    "tensorboard": {
+      "version": "2.15.1",
+      "path": "tensorboard_logs",
+      "launch_script": "run_tensorboard.bat",
+      "port": 6006,
+      "health_endpoint": "/",
+      "dependencies": []
+    },
+    "mdlib_integration": {
+      "version": "2.2",
+      "path": "implementation_plan/dataset-integration/mdlib",
+      "launch_script": "run_multi_dataset_integration.bat",
+      "dependencies": []
+    }
+  },
+  "deployment": {
+    "docker": {
+      "compose_file": "docker-compose.yml",
+      "build_command": "docker-compose build",
+      "start_command": "docker-compose up -d",
+      "stop_command": "docker-compose down"
+    }
+  },
+  "testing": {
+    "validation_script": "validation_pipeline.py",
+    "test_scripts": {
+      "api": "tests/test_fastapi_backend.py",
+      "ui": "tests/test_modern_ui.py",
+      "integration": "tests/test_integration.py"
+    }
+  }
+}
