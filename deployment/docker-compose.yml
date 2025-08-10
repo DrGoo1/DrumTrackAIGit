@@ -1,0 +1,41 @@
+services:
+  # FastAPI Backend
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: drumtrackai-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONPATH=/app
+    volumes:
+      - ./admin:/app/admin
+      - ./database:/app/database
+    networks:
+      - drumtrackai-network
+    restart: unless-stopped
+
+  # React Frontend
+  frontend:
+    build:
+      context: ./web-frontend
+      dockerfile: Dockerfile
+    container_name: drumtrackai-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000
+    depends_on:
+      - backend
+    networks:
+      - drumtrackai-network
+    restart: unless-stopped
+
+networks:
+  drumtrackai-network:
+    driver: bridge
+
+volumes:
+  drumtrackai-data:
+    driver: local

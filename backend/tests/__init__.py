@@ -1,4 +1,0 @@
-"""
-backend.tests package
-"""
-

@@ -1,4 +1,0 @@
-"""
-DrumTracKAI.backend package
-"""
-

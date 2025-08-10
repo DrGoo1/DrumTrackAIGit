@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DrumTracKAI Professional WebDAW</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: #ffffff;
+            overflow: hidden;
+            height: 100vh;
+        }
+        
+        .webdaw-container {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+        }
+        
+        .drum-creation-panel {
+            width: 300px;
+            background: rgba(0, 0, 0, 0.3);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .main-daw {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .daw-header {
+            height: 60px;
+            background: rgba(0, 0, 0, 0.4);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+        
+        .transport-controls {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .transport-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .transport-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .transport-btn.active {
+            background: #7c3aed;
+            border-color: #7c3aed;
+        }
+        
+        .timeline-info {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .time-display {
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .daw-workspace {
+            flex: 1;
+            display: flex;
+        }
+        
+        .mixer-section {
+            width: 400px;
+            background: rgba(0, 0, 0, 0.2);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 20px;
+        }
+        
+        .waveform-section {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        
+        .mixer-track {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+        
+        .track-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .track-name {
+            font-weight: bold;
+            color: #fbbf24;
+        }
+        
+        .track-controls {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .track-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .track-btn.active {
+            background: #ef4444;
+        }
+        
+        .fader-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        
+        .fader-track {
+            flex: 1;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .fader-thumb {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: #7c3aed;
+            border-radius: 50%;
+            top: -5px;
+            left: 75%;
+            cursor: grab;
+            transition: all 0.1s;
+        }
+        
+        .fader-thumb:active {
+            cursor: grabbing;
+            transform: scale(1.1);
+        }
+        
+        .volume-display {
+            min-width: 40px;
+            text-align: right;
+            font-size: 12px;
+        }
+        
+        .level-meter {
+            width: 20px;
+            height: 100px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 2px;
+            position: relative;
+            margin: 10px 0;
+        }
+        
+        .level-bar {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 60%;
+            background: linear-gradient(to top, #22c55e 0%, #eab308 70%, #ef4444 90%);
+            border-radius: 2px;
+            transition: height 0.1s;
+        }
+        
+        .waveform-track {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            height: 80px;
+            position: relative;
+        }
+        
+        .waveform-canvas {
+            width: 100%;
+            height: 50px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .waveform-visual {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #7c3aed;
+            transform: translateY(-50%);
+        }
+        
+        .playhead {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #fbbf24;
+            z-index: 10;
+            left: 25%;
+        }
+        
+        .status-bar {
+            height: 40px;
+            background: rgba(0, 0, 0, 0.4);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            font-size: 12px;
+        }
+        
+        .creation-section {
+            margin-bottom: 20px;
+        }
+        
+        .section-title {
+            color: #fbbf24;
+            font-weight: bold;
+            margin-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 5px;
+        }
+        
+        .control-group {
+            margin-bottom: 15px;
+        }
+        
+        .control-label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 12px;
+            color: #d1d5db;
+        }
+        
+        .control-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px;
+            border-radius: 4px;
+        }
+        
+        .control-slider {
+            width: 100%;
+            margin: 10px 0;
+        }
+        
+        .btn-primary {
+            background: #7c3aed;
+            border: 1px solid #7c3aed;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        .btn-primary:hover {
+            background: #6d28d9;
+        }
+        
+        .upload-area {
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            margin: 10px 0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .upload-area:hover {
+            border-color: #7c3aed;
+            background: rgba(124, 58, 237, 0.1);
+        }
+        
+        .upload-area.dragover {
+            border-color: #fbbf24;
+            background: rgba(251, 191, 36, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="webdaw-container">
+        <!-- Drum Creation Panel -->
+        <div class="drum-creation-panel">
+            <div class="creation-section">
+                <div class="section-title">Audio Stem Upload</div>
+                
+                <div class="upload-area" id="stemUploadArea">
+                    <div>📁 Drop audio stems here</div>
+                    <div style="font-size: 12px; margin-top: 5px; color: #9ca3af;">
+                        Supports: WAV, MP3, FLAC
+                    </div>
+                    <input type="file" id="stemFileInput" multiple accept=".wav,.mp3,.flac" style="display: none;">
+                </div>
+                
+                <div id="uploadedStems"></div>
+            </div>
+            
+            <div class="creation-section">
+                <div class="section-title">Drum Creation Studio</div>
+                
+                <div class="control-group">
+                    <label class="control-label">Creation Mode</label>
+                    <select class="control-input" id="creationMode">
+                        <option value="generate">Generate New</option>
+                        <option value="enhance">Enhance Existing</option>
+                        <option value="replace">Replace Drums</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label class="control-label">Tempo: <span id="tempoValue">120</span> BPM</label>
+                    <input type="range" class="control-slider" id="tempoSlider" min="60" max="200" value="120">
+                </div>
+                
+                <div class="control-group">
+                    <label class="control-label">Humanization: <span id="humanizeValue">50</span>%</label>
+                    <input type="range" class="control-slider" id="humanizeSlider" min="0" max="100" value="50">
+                </div>
+                
+                <div class="control-group">
+                    <label class="control-label">Groove Style</label>
+                    <select class="control-input" id="grooveStyle">
+                        <option value="tight">Tight</option>
+                        <option value="loose">Loose</option>
+                        <option value="swing">Swing</option>
+                        <option value="shuffle">Shuffle</option>
+                    </select>
+                </div>
+                
+                <button class="btn-primary" onclick="generateDrums()">Generate Drums</button>
+            </div>
+        </div>
+        
+        <!-- Main DAW Interface -->
+        <div class="main-daw">
+            <!-- DAW Header -->
+            <div class="daw-header">
+                <div class="transport-controls">
+                    <button class="transport-btn" onclick="skipBack()">⏮</button>
+                    <button class="transport-btn" id="playBtn" onclick="togglePlay()">▶</button>
+                    <button class="transport-btn" onclick="stop()">⏹</button>
+                    <button class="transport-btn" onclick="skipForward()">⏭</button>
+                </div>
+                
+                <div class="timeline-info">
+                    <div class="time-display" id="timeDisplay">00:00:00</div>
+                    <div>|</div>
+                    <div class="time-display" id="barsDisplay">001.01.000</div>
+                </div>
+                
+                <div style="display: flex; gap: 10px;">
+                    <button class="transport-btn" onclick="zoomIn()">🔍+</button>
+                    <button class="transport-btn" onclick="zoomOut()">🔍-</button>
+                </div>
+            </div>
+            
+            <!-- DAW Workspace -->
+            <div class="daw-workspace">
+                <!-- Mixer Section -->
+                <div class="mixer-section">
+                    <div class="mixer-track">
+                        <div class="track-header">
+                            <div class="track-name">Kick</div>
+                            <div class="track-controls">
+                                <button class="track-btn" onclick="toggleMute('kick')">M</button>
+                                <button class="track-btn" onclick="toggleSolo('kick')">S</button>
+                            </div>
+                        </div>
+                        <div class="fader-container">
+                            <div class="fader-track">
+                                <div class="fader-thumb" data-track="kick"></div>
+                            </div>
+                            <div class="volume-display">75</div>
+                        </div>
+                        <div class="level-meter">
+                            <div class="level-bar"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mixer-track">
+                        <div class="track-header">
+                            <div class="track-name">Snare</div>
+                            <div class="track-controls">
+                                <button class="track-btn" onclick="toggleMute('snare')">M</button>
+                                <button class="track-btn" onclick="toggleSolo('snare')">S</button>
+                            </div>
+                        </div>
+                        <div class="fader-container">
+                            <div class="fader-track">
+                                <div class="fader-thumb" data-track="snare"></div>
+                            </div>
+                            <div class="volume-display">80</div>
+                        </div>
+                        <div class="level-meter">
+                            <div class="level-bar"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mixer-track">
+                        <div class="track-header">
+                            <div class="track-name">Hi-Hat</div>
+                            <div class="track-controls">
+                                <button class="track-btn" onclick="toggleMute('hihat')">M</button>
+                                <button class="track-btn" onclick="toggleSolo('hihat')">S</button>
+                            </div>
+                        </div>
+                        <div class="fader-container">
+                            <div class="fader-track">
+                                <div class="fader-thumb" data-track="hihat"></div>
+                            </div>
+                            <div class="volume-display">65</div>
+                        </div>
+                        <div class="level-meter">
+                            <div class="level-bar"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Waveform Section -->
+                <div class="waveform-section">
+                    <div class="waveform-track">
+                        <div class="track-header">
+                            <div class="track-name">Kick Track</div>
+                        </div>
+                        <div class="waveform-canvas">
+                            <div class="waveform-visual"></div>
+                            <div class="playhead"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="waveform-track">
+                        <div class="track-header">
+                            <div class="track-name">Snare Track</div>
+                        </div>
+                        <div class="waveform-canvas">
+                            <div class="waveform-visual"></div>
+                            <div class="playhead"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="waveform-track">
+                        <div class="track-header">
+                            <div class="track-name">Hi-Hat Track</div>
+                        </div>
+                        <div class="waveform-canvas">
+                            <div class="waveform-visual"></div>
+                            <div class="playhead"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Status Bar -->
+            <div class="status-bar">
+                <div>DrumTracKAI Professional WebDAW v1.1.10</div>
+                <div>CPU: 12% | RAM: 2.1GB | Latency: 5.2ms</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let isPlaying = false;
+        let currentTime = 0;
+        let uploadedStems = [];
+        
+        // Initialize WebDAW
+        document.addEventListener('DOMContentLoaded', function() {
+            setupSliders();
+            setupDragAndDrop();
+            setupFaders();
+            console.log('DrumTracKAI WebDAW initialized');
+        });
+        
+        // Setup slider controls
+        function setupSliders() {
+            const tempoSlider = document.getElementById('tempoSlider');
+            const humanizeSlider = document.getElementById('humanizeSlider');
+            
+            tempoSlider.addEventListener('input', function() {
+                document.getElementById('tempoValue').textContent = this.value;
+            });
+            
+            humanizeSlider.addEventListener('input', function() {
+                document.getElementById('humanizeValue').textContent = this.value;
+            });
+        }
+        
+        // Setup drag and drop for stem upload
+        function setupDragAndDrop() {
+            const uploadArea = document.getElementById('stemUploadArea');
+            const fileInput = document.getElementById('stemFileInput');
+            
+            uploadArea.addEventListener('click', () => fileInput.click());
+            
+            uploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.classList.add('dragover');
+            });
+            
+            uploadArea.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                this.classList.remove('dragover');
+            });
+            
+            uploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.classList.remove('dragover');
+                handleFiles(e.dataTransfer.files);
+            });
+            
+            fileInput.addEventListener('change', function(e) {
+                handleFiles(e.target.files);
+            });
+        }
+        
+        // Handle uploaded files
+        function handleFiles(files) {
+            const uploadedStemsDiv = document.getElementById('uploadedStems');
+            
+            Array.from(files).forEach(file => {
+                if (file.type.startsWith('audio/')) {
+                    uploadedStems.push(file);
+                    
+                    const stemDiv = document.createElement('div');
+                    stemDiv.style.cssText = `
+                        background: rgba(255, 255, 255, 0.1);
+                        padding: 8px;
+                        margin: 5px 0;
+                        border-radius: 4px;
+                        font-size: 12px;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                    `;
+                    
+                    stemDiv.innerHTML = `
+                        <span>🎵 ${file.name}</span>
+                        <button onclick="removeStem('${file.name}')" style="background: #ef4444; border: none; color: white; padding: 2px 6px; border-radius: 2px; cursor: pointer;">×</button>
+                    `;
+                    
+                    uploadedStemsDiv.appendChild(stemDiv);
+                    
+                    console.log('Uploaded stem:', file.name);
+                    
+                    // Simulate processing
+                    setTimeout(() => {
+                        console.log('Processing stem:', file.name);
+                        // Here you would send the file to the backend
+                        uploadStemToBackend(file);
+                    }, 500);
+                }
+            });
+        }
+        
+        // Upload stem to backend
+        function uploadStemToBackend(file) {
+            const formData = new FormData();
+            formData.append('stem', file);
+            
+            fetch('/api/upload-stem', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Stem uploaded successfully:', data);
+            })
+            .catch(error => {
+                console.error('Error uploading stem:', error);
+            });
+        }
+        
+        // Setup fader controls
+        function setupFaders() {
+            document.querySelectorAll('.fader-thumb').forEach(thumb => {
+                let isDragging = false;
+                let startX = 0;
+                let startLeft = 0;
+                
+                thumb.addEventListener('mousedown', function(e) {
+                    isDragging = true;
+                    startX = e.clientX;
+                    startLeft = parseFloat(this.style.left) || 75;
+                    e.preventDefault();
+                });
+                
+                document.addEventListener('mousemove', function(e) {
+                    if (!isDragging) return;
+                    
+                    const deltaX = e.clientX - startX;
+                    const containerWidth = thumb.parentElement.offsetWidth - 16;
+                    let newLeft = startLeft + (deltaX / containerWidth) * 100;
+                    newLeft = Math.max(0, Math.min(100, newLeft));
+                    
+                    thumb.style.left = `${newLeft}%`;
+                    
+                    const volumeDisplay = thumb.parentElement.parentElement.querySelector('.volume-display');
+                    volumeDisplay.textContent = Math.round(newLeft);
+                });
+                
+                document.addEventListener('mouseup', function() {
+                    isDragging = false;
+                });
+            });
+        }
+        
+        // Transport controls
+        function togglePlay() {
+            isPlaying = !isPlaying;
+            const playBtn = document.getElementById('playBtn');
+            playBtn.textContent = isPlaying ? '⏸' : '▶';
+            playBtn.classList.toggle('active', isPlaying);
+            
+            if (isPlaying) {
+                startPlayback();
+            } else {
+                stopPlayback();
+            }
+        }
+        
+        function stop() {
+            isPlaying = false;
+            currentTime = 0;
+            document.getElementById('playBtn').textContent = '▶';
+            document.getElementById('playBtn').classList.remove('active');
+            updateTimeDisplay();
+        }
+        
+        function skipBack() {
+            currentTime = Math.max(0, currentTime - 10);
+            updateTimeDisplay();
+        }
+        
+        function skipForward() {
+            currentTime += 10;
+            updateTimeDisplay();
+        }
+        
+        function startPlayback() {
+            const interval = setInterval(() => {
+                if (!isPlaying) {
+                    clearInterval(interval);
+                    return;
+                }
+                currentTime += 0.1;
+                updateTimeDisplay();
+                updatePlayhead();
+            }, 100);
+        }
+        
+        function stopPlayback() {
+            // Playback stopped
+        }
+        
+        function updateTimeDisplay() {
+            const minutes = Math.floor(currentTime / 60);
+            const seconds = Math.floor(currentTime % 60);
+            const centiseconds = Math.floor((currentTime % 1) * 100);
+            
+            document.getElementById('timeDisplay').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}:${centiseconds.toString().padStart(2, '0')}`;
+            
+            const bars = Math.floor(currentTime / 2) + 1;
+            const beats = Math.floor((currentTime % 2) / 0.5) + 1;
+            const ticks = Math.floor(((currentTime % 0.5) / 0.5) * 1000);
+            
+            document.getElementById('barsDisplay').textContent = 
+                `${bars.toString().padStart(3, '0')}.${beats.toString().padStart(2, '0')}.${ticks.toString().padStart(3, '0')}`;
+        }
+        
+        function updatePlayhead() {
+            const playheads = document.querySelectorAll('.playhead');
+            const position = (currentTime % 10) / 10 * 100;
+            playheads.forEach(playhead => {
+                playhead.style.left = `${position}%`;
+            });
+        }
+        
+        // Track controls
+        function toggleMute(track) {
+            console.log('Toggle mute:', track);
+        }
+        
+        function toggleSolo(track) {
+            console.log('Toggle solo:', track);
+        }
+        
+        function zoomIn() {
+            console.log('Zoom in');
+        }
+        
+        function zoomOut() {
+            console.log('Zoom out');
+        }
+        
+        function generateDrums() {
+            console.log('Generating drums with uploaded stems:', uploadedStems.length);
+            
+            if (uploadedStems.length === 0) {
+                alert('Please upload audio stems first');
+                return;
+            }
+            
+            // Simulate drum generation
+            alert(`Generating drums with ${uploadedStems.length} uploaded stems...`);
+        }
+        
+        function removeStem(filename) {
+            uploadedStems = uploadedStems.filter(stem => stem.name !== filename);
+            const uploadedStemsDiv = document.getElementById('uploadedStems');
+            Array.from(uploadedStemsDiv.children).forEach(child => {
+                if (child.textContent.includes(filename)) {
+                    child.remove();
+                }
+            });
+        }
+    </script>
+</body>
+</html>

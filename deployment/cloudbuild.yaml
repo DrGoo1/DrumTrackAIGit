@@ -1,0 +1,113 @@
+# Google Cloud Build configuration for DrumTracKAI Professional WebDAW
+steps:
+  # Build WebDAW Frontend Container
+  - name: 'gcr.io/cloud-builders/docker'
+    args: 
+      - 'build'
+      - '-f'
+      - 'web-frontend/Dockerfile.simple'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/drumtrackai-webdaw:$BUILD_ID'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/drumtrackai-webdaw:latest'
+      - './web-frontend'
+    id: 'build-webdaw'
+
+  # Build Backend Container (if Dockerfile exists)
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-f'
+      - 'backend/Dockerfile'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/drumtrackai-backend:$BUILD_ID'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/drumtrackai-backend:latest'
+      - './backend'
+    id: 'build-backend'
+    waitFor: ['-']
+
+  # Push WebDAW image to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/drumtrackai-webdaw:$BUILD_ID']
+    waitFor: ['build-webdaw']
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/drumtrackai-webdaw:latest']
+    waitFor: ['build-webdaw']
+
+  # Push Backend image to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/drumtrackai-backend:$BUILD_ID']
+    waitFor: ['build-backend']
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/drumtrackai-backend:latest']
+    waitFor: ['build-backend']
+
+  # Deploy WebDAW to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'drumtrackai-webdaw'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/drumtrackai-webdaw:$BUILD_ID'
+      - '--region'
+      - 'us-central1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--port'
+      - '80'
+      - '--memory'
+      - '1Gi'
+      - '--cpu'
+      - '1'
+      - '--max-instances'
+      - '10'
+      - '--set-env-vars'
+      - 'API_URL=https://drumtrackai-backend-SERVICE_URL'
+    waitFor: ['build-webdaw']
+
+  # Deploy Backend to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'drumtrackai-backend'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/drumtrackai-backend:$BUILD_ID'
+      - '--region'
+      - 'us-central1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--port'
+      - '8000'
+      - '--memory'
+      - '2Gi'
+      - '--cpu'
+      - '2'
+      - '--max-instances'
+      - '5'
+      - '--set-env-vars'
+      - 'CORS_ORIGINS=https://drumtrackai-webdaw-SERVICE_URL'
+    waitFor: ['build-backend']
+
+# Store images in Container Registry
+images:
+  - 'gcr.io/$PROJECT_ID/drumtrackai-webdaw:$BUILD_ID'
+  - 'gcr.io/$PROJECT_ID/drumtrackai-webdaw:latest'
+  - 'gcr.io/$PROJECT_ID/drumtrackai-backend:$BUILD_ID'
+  - 'gcr.io/$PROJECT_ID/drumtrackai-backend:latest'
+
+# Build options
+options:
+  machineType: 'E2_HIGHCPU_8'
+  diskSizeGb: '100'
+  
+# Build timeout
+timeout: '1200s'

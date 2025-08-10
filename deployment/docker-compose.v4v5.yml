@@ -1,0 +1,30 @@
+version: '3.9'
+services:
+  webdaw-backend:
+    build: ./backend
+    environment:
+      - DB_URL=sqlite:////app/data/app.db
+      - JWT_SECRET_KEY=drumtrackai-secret-key-change-in-production
+    volumes:
+      - ./backend/data:/app/data
+      - ./samples:/app/samples
+      - ./exports:/app/exports
+      - ./irs:/app/irs
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+  
+  nginx:
+    image: nginx:1.25
+    volumes:
+      - ./web-frontend/build:/usr/share/nginx/html:ro
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./samples:/samples:ro
+    ports:
+      - "80:80"
+    depends_on:
+      - webdaw-backend

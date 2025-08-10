@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  # Professional WebDAW Frontend (HTML/JS)
+  webdaw-frontend:
+    build:
+      context: ./web-frontend
+      dockerfile: Dockerfile.webdaw
+    ports:
+      - "3000:80"
+    environment:
+      - NODE_ENV=production
+      - REACT_APP_API_URL=http://localhost:8000
+      - REACT_APP_WS_URL=ws://localhost:8000
+    volumes:
+      - ./web-frontend/src/components/WebDAW.html:/usr/share/nginx/html/components/WebDAW.html:ro
+    depends_on:
+      - drumtrackai-backend
+    networks:
+      - webdaw-network
+
+  # DrumTracKAI FastAPI Backend
+  drumtrackai-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONPATH=/app
+      - CORS_ORIGINS=http://localhost:3000
+    volumes:
+      - ./uploads:/app/uploads
+      - ./models:/app/models
+    networks:
+      - webdaw-network
+
+  # Nginx Reverse Proxy
+  nginx-proxy:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - webdaw-frontend
+      - drumtrackai-backend
+    networks:
+      - webdaw-network
+
+  # Redis for WebSocket scaling (optional)
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - webdaw-network
+
+networks:
+  webdaw-network:
+    driver: bridge
+
+volumes:
+  uploads:
+  models:
